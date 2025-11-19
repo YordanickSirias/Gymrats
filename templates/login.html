@@ -1,0 +1,55 @@
+<!-- ...existing code... -->
+{% extends 'base.html' %}
+{% block titulo %} Iniciar Sesión {% endblock titulo %}
+
+{% block body %}
+<div style="background-color: #f2f2f2; display:flex; height:95vh; justify-content:center; align-items:center;">
+  <div style="display:flex; border-radius:20px; overflow:hidden; width:90%; max-width:1100px; height:65vh; background-color:#ffffff; box-shadow:0px 4px 12px rgba(0,0,0,0.12);">
+    
+    <!-- Lado izquierdo -->
+    <div style="background: linear-gradient(180deg, #000000, #ff4d4d); color:white; flex:1; padding:30px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <img src="{{ url_for('static', filename='logo_gymrats.png') }}" style="max-width:40%; height:auto; object-fit:contain; margin-bottom:20px;">
+      <h2 style="margin-bottom:8px;">¡BIENVENIDO NUEVAMENTE!</h2>
+      <p style="font-family:Lucida Console; margin-bottom:16px; max-width:80%;">¿Nuevo aquí? Regístrate y comienza tu transformación fitness.</p>
+      <a href="{{ url_for('registro') }}">
+        <button type="button" class="btn btn-light text-dark fw-bold">Registrarse</button>
+      </a>
+    </div>
+
+    <!-- Lado derecho -->
+    <div style="background-color:#f8f9fa; flex:1; padding:30px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+      <h2 style="margin-bottom:14px; color:#000;">Iniciar Sesión</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert" style="width:100%; max-width:400px; text-align:center;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% endwith %}
+
+      <button type="button" class="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center mb-3"
+              style="max-width:400px; height:45px;">
+        <img src="{{ url_for('static', filename='google_gymrats.png') }}" alt="Google Logo" style="width:20px; margin-right:10px;">
+        Iniciar con Google
+      </button>
+
+      <p style="margin-bottom:12px; color:#555;">o inicia sesión con tu cuenta</p>
+
+      <form method="post" action="{{ url_for('accesologin') }}" style="width:100%; max-width:400px;">
+        <div class="input-group mb-3">
+          <input type="email" class="form-control" name="email" placeholder="Correo electrónico" required>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        </div>
+        <button type="submit" class="btn btn-danger fw-bold" style="width:100%; height:45px;">Iniciar Sesión</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+<!-- ...existing code... -->

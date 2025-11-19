@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block titulo %} Registrarse {% endblock titulo %}
+
+{% block body %}
+<div class="d-flex justify-content-center align-items-center vh-100" style="background-color: #f2f2f2;">
+    <div class="p-4 w-100" style="max-width: 1100px;">
+        <div class="rounded-5 overflow-hidden shadow-lg" style="background-color: #ffffff;">
+            <div class="row g-0">
+
+                <!-- Lado izquierdo -->
+                <div class="col-md-6 d-flex flex-column justify-content-center align-items-center text-white p-5"
+                    style="background: linear-gradient(180deg, #000000, #ff4d4d);">
+                    <img src="{{ url_for('static', filename='logo_gymrats.png') }}" class="img-fluid mb-4"
+                        style="max-width: 45%; height: auto; object-fit: contain;"> 
+                    <h2 class="text-center fw-bold">¡ÚNETE A GYMRATS!</h2>
+                    <p class="text-center mb-4" style="font-family: 'Lucida Console', monospace;">
+                        Regístrate y forma parte de nuestra comunidad fitness.
+                    </p>
+                    <a href="{{ url_for('login') }}">
+                        <button type="button" class="btn btn-light text-dark fw-bold">Iniciar Sesión</button>
+                    </a>
+                </div>
+
+                <!-- Lado derecho -->
+                <div class="col-md-6 d-flex flex-column justify-content-center align-items-center p-5"
+                    style="background-color: #f8f9fa;">
+                    <h2 class="mb-4 fw-bold text-dark">Crear cuenta</h2>
+
+                    <!-- Botón Google -->
+                    <button type="button"
+                        class="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center mb-3"
+                        style="max-width: 400px; height: 45px;">
+                        <img src="{{ url_for('static', filename='google_gymrats.png') }}" alt="Google Logo"
+                            style="width: 20px; margin-right: 10px;"> 
+                        Iniciar con Google
+                    </button>
+
+                    <p class="text-center mb-3 text-secondary">o usa tu correo electrónico</p>
+
+                    <!-- Formulario -->
+                    <form method="post" action="{{ url_for('crearusuario') }}" class="w-100" style="max-width: 400px;">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" name="nombre"
+                                   placeholder="Nombre completo" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" name="email"
+                                   placeholder="Correo electrónico" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" name="password"
+                                   placeholder="Contraseña" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" name="confirm_password"
+                                   placeholder="Confirmar contraseña" required>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100 fw-bold" style="height: 45px;">
+                            Registrarse
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            {% for category, message in messages %}
+                alert('{{ message }}');
+            {% endfor %}
+        });
+    </script>
+{% endif %}
+{% endwith %}
+{% endblock body %}

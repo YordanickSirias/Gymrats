@@ -1,0 +1,82 @@
+{% extends "baseadmin.html" %}
+{% block title %}Perfil Admin{% endblock title %}
+
+{% block body %}
+<style>
+    /* === ESTILO CORPORATIVO SUTIL EN ROJO === */
+    .header-perfil {
+        background-color: #d90429;
+        color: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 3px 8px rgba(217, 4, 41, 0.3);
+    }
+
+    .card-perfil {
+        border: none;
+        border-top: 4px solid #d90429;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-perfil img {
+        width: 140px;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid #d90429;
+        margin-bottom: 1rem;
+    }
+
+    .card-perfil h5 {
+        color: #d90429;
+        font-weight: 600;
+    }
+
+    .card-perfil p {
+        margin: 0.3rem 0;
+    }
+
+    .card-perfil em {
+        color: #555;
+        font-style: italic;
+    }
+
+    .btn-logout {
+        background-color: #b30000;
+        border: none;
+        color: white;
+        transition: 0.3s;
+    }
+
+    .btn-logout:hover {
+        background-color: #800000;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="header-perfil mb-4">
+        <h2>Perfil del Administrador</h2>
+        <p class="mb-0">Panel de Control - GymRats</p>
+    </div>
+
+    <div class="card card-perfil p-4">
+        <div class="text-center">
+            <img src="{{ url_for('static', filename='user.png') }}" alt="Perfil" class="shadow-sm">
+            <h5 class="mt-2">Administrador Principal</h5>
+        </div>
+
+        <div class="card-body text-center">
+            <p><strong>Email:</strong> admin@gymrats.com</p>
+            <p><strong>Rol:</strong> Administrador General</p>
+            <p><strong>Último Acceso:</strong> 19 de Octubre de 2025, 14:32 hrs</p>
+            <p><strong>Estado del Sistema:</strong> 100% operativo. Todos los servidores sincronizados correctamente.</p>
+            <p class="mt-3"><em>“La excelencia no se logra entrenando una vez, sino liderando todos los días.”</em></p>
+            <a href="{{ url_for('logout') }}" class="btn btn-logout mt-3 px-4">
+                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

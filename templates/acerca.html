@@ -1,0 +1,44 @@
+<!-- ...existing code... -->
+{% extends 'base.html' %}
+
+{% block titulo %}Acerca de GymRats{% endblock titulo %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='logo_gymrats.png') }}" alt="Logo GymRats" width="80" class="mb-3">
+                        <h2 class="fw-bold text-primary">¡Bienvenido a GymRats!</h2>
+                    </div>
+                    <p class="fs-5">
+                        En <span class="fw-bold text-primary">GymRats</span> nos apasiona el fitness y la vida saludable.
+                        Somos una tienda dedicada a ofrecer suplementos, equipamiento y asesorías para ayudarte a alcanzar
+                        tus metas de entrenamiento.
+                    </p>
+                    <p class="fs-5">
+                        Contamos con un catálogo variado de productos fitness de calidad: desde proteínas y creatinas
+                        hasta ropa y accesorios para entrenamiento.
+                    </p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">Suplementos y nutrición deportiva</li>
+                        <li class="list-group-item">Equipamiento y accesorios</li>
+                        <li class="list-group-item">Asesorías fitness personalizadas</li>
+                        <li class="list-group-item">Atención al cliente especializada</li>
+                    </ul>
+                    <p class="fs-5">
+                        Nuestro equipo te acompaña en cada paso de tu progreso físico, ofreciendo orientación y productos
+                        de la mejor calidad para tus objetivos.
+                    </p>
+                    <div class="text-center mt-4">
+                        <span class="badge bg-primary fs-6">¡Motivación, disciplina y resultados!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- ...existing code... -->

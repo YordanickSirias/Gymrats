@@ -1,0 +1,50 @@
+<!-- ...existing code... -->
+{% extends 'base.html' %}
+
+{% block titulo %}Contacto{% endblock titulo %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-lg border-0">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='logo_gymrats.png') }}" alt="Logo GymRats" width="60" class="mb-2">
+                        <h2 class="fw-bold text-primary">Contáctanos</h2>
+                        <p class="text-muted">¿Tienes dudas sobre productos o asesorías? ¡Escríbenos!</p>
+                    </div>
+                    {% if user %}
+                        <div class="alert alert-success">
+                            <h5 class="mb-2">¡Gracias por contactarnos!</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li><b>Nombre:</b> {{ user.nombre }}</li>
+                                <li><b>Email:</b> {{ user.email }}</li>
+                                <li><b>Mensaje:</b> {{ user.mensaje }}</li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                    <form action="" method="get">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" id="nombre" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="mensaje" class="form-label">Mensaje</label>
+                            <textarea id="mensaje" name="mensaje" rows="4" class="form-control" required></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Enviar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- ...existing code... -->

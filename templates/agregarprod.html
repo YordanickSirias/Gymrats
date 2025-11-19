@@ -1,0 +1,275 @@
+{% extends "baseadmin.html" %}
+{% block title %}Editar Productos{% endblock title %}
+{% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+{% for category, message in messages %}
+<script type="text/javascript">
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 2000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+Toast.fire({
+  icon: "success",
+  title: "{{message}}"
+});
+</script>
+{% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+<style>
+  body {
+    background-color: #fdf2f2;
+  }
+
+  .bg-danger {
+    background-color: #e21313 !important;
+  }
+
+  .table th {
+    background-color: #b30000 !important;
+    color: #fff !important;
+  }
+
+  .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #fff5f5 !important;
+  }
+
+  .table-striped > tbody > tr:nth-of-type(even) {
+    background-color: #ffffff !important;
+  }
+
+  .table-bordered {
+    border-color: #f1c0c0 !important;
+  }
+
+  .btn-success {
+    background-color: #e21313 !important;
+    border-color: #e21313 !important;
+  }
+
+  .btn-success:hover {
+    background-color: #b30000 !important;
+    border-color: #b30000 !important;
+  }
+
+  .btn-danger {
+    background-color: #8b0000 !important;
+    border-color: #8b0000 !important;
+  }
+
+  .btn-danger:hover {
+    background-color: #a00000 !important;
+  }
+
+  .btn-primary {
+    background-color: #e21313 !important;
+    border-color: #e21313 !important;
+  }
+
+  .btn-primary:hover {
+    background-color: #b30000 !important;
+    border-color: #b30000 !important;
+  }
+
+  .btn-outline-secondary {
+    border-color: #e21313;
+    color: #e21313;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: #e21313;
+    color: white;
+  }
+
+  .form-label {
+    color: #b30000;
+    font-weight: 500;
+  }
+
+  .modal-header.bg-success {
+    background-color: #e21313 !important;
+  }
+
+  .modal-content {
+    border: 1px solid #f1c0c0;
+    border-radius: 8px;
+  }
+
+  .pagination .page-item.active .page-link {
+    background-color: #e21313;
+    border-color: #e21313;
+  }
+
+  .pagination .page-link {
+    color: #e21313;
+  }
+
+  .pagination .page-link:hover {
+    background-color: #ffeaea;
+  }
+</style>
+
+<div class="container mt-4">
+  <div class="bg-danger bg-gradient text-white rounded p-3 mb-3 shadow-sm">
+    <h2 class="text-center fw-bold">Lista de Productos</h2>
+  </div>
+
+  <!-- FILTROS / BUSCADOR -->
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+      <label class="form-label mb-1">Mostrar</label>
+      <select name="per_page" class="form-select" onchange="this.form.submit()">
+        {% for opt in per_page_options %}
+        <option value="{{ opt }}" {% if per_page==opt %}selected{% endif %}>{{ opt }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label mb-1">Ordenar</label>
+      <select name="sort" class="form-select" onchange="this.form.submit()">
+        <option value="id_asc" {% if sort=='id_asc' %}selected{% endif %}>ID (asc)</option>
+        <option value="precio_desc" {% if sort=='precio_desc' %}selected{% endif %}>Precio (mayor → menor)</option>
+        <option value="precio_asc" {% if sort=='precio_asc' %}selected{% endif %}>Precio (menor → mayor)</option>
+        <option value="nombre_asc" {% if sort=='nombre_asc' %}selected{% endif %}>Nombre A → Z</option>
+        <option value="nombre_desc" {% if sort=='nombre_desc' %}selected{% endif %}>Nombre Z → A</option>
+      </select>
+    </div>
+    <div class="col-md-5">
+      <label class="form-label mb-1">Buscar</label>
+      <div class="input-group">
+        <input type="text" name="search" class="form-control" placeholder="Ingrese nombre de producto" value="{{ search }}">
+        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+      </div>
+    </div>
+    <div class="col-auto align-self-end">
+      <a href="{{ url_for('editarproductos') }}" class="btn btn-light border">Borrar filtros</a>
+    </div>
+  </form>
+
+  <!-- TABLA -->
+  <div class="table-responsive">
+    <table id="tablaProductos" class="table table-bordered table-striped text-center align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if productos %}
+        {% for producto in productos %}
+        <tr>
+          <td>{{ loop.index + (page-1)*per_page if page is defined else loop.index }}</td>
+          <td>{{ producto.nombre }}</td>
+          <td>{{ producto.precio }}</td>
+          <td>{{ producto.descripcion }}</td>
+          <td>
+            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditar{{ producto.id }}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <a href="{{ url_for('eliminar_producto', id=producto.id) }}" class="btn btn-danger btn-sm" data-confirm="¿Seguro que deseas eliminar este producto?" data-confirm-ok="Sí, eliminar" data-confirm-cancel="Cancelar">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+
+        <!-- MODAL EDITAR -->
+        <div class="modal fade" id="modalEditar{{ producto.id }}" tabindex="-1" aria-labelledby="modalLabel{{ producto.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <form method="POST" action="{{ url_for('editar_producto_modal', id=producto.id) }}">
+              <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                  <h5 class="modal-title" id="modalLabel{{ producto.id }}">Editar Producto</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="nombre" class="form-control" value="{{ producto.nombre }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Precio</label>
+                    <input type="number" step="0.01" name="precio" class="form-control" value="{{ producto.precio }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea name="descripcion" class="form-control" required>{{ producto.descripcion }}</textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <tr><td colspan="5">No hay productos que coincidan.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINACIÓN -->
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <div>Mostrando {{ start_item }} - {{ end_item }} de {{ total_count }} productos</div>
+    <nav aria-label="Paginación">
+      <ul class="pagination mb-0">
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('editarproductos', page=page-1 if page>1 else 1, per_page=per_page, sort=sort, search=search) }}">Anterior</a>
+        </li>
+        {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('editarproductos', page=p, per_page=per_page, sort=sort, search=search) }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+        <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('editarproductos', page=page+1 if page<total_pages else total_pages, per_page=per_page, sort=sort, search=search) }}">Siguiente</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    var table = $('#tablaProductos').DataTable({
+      dom: 'Bfrtip',
+      buttons: [
+        { extend: 'copyHtml5', text: '<i class="bi bi-clipboard"></i>', titleAttr: 'Copiar' },
+        { extend: 'excelHtml5', text: '<i class="bi bi-file-earmark-excel"></i>', titleAttr: 'Exportar a Excel' },
+        { extend: 'pdfHtml5', text: '<i class="bi bi-file-earmark-pdf"></i>', titleAttr: 'Descargar PDF', orientation: 'landscape', pageSize: 'letter' },
+        { extend: 'print', text: '<i class="bi bi-printer"></i>', titleAttr: 'Imprimir' }
+      ],
+      lengthMenu: [[10, 15, 20, 25, -1], [10, 15, 20, 25, 'Todos']],
+      language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
+      responsive: true,
+      searching: false,
+      info: false,
+      paging: false,
+      ordering: false
+    });
+  } catch (err) {
+    console.error('Error inicializando DataTable:', err);
+  }
+});
+</script>
+
+{% endblock %}
