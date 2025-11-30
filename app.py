@@ -102,53 +102,6 @@ def dashboard():
                            usuarios_count=usuarios_count,
                            productos_count=productos_count)
 
-@app.before_request
-def ensure_db_connection():
-    """Ping a la conexión para reconectar si está caída y evitar 'MySQL server has gone away'."""
-    try:
-        conn = mysql.connection
-        # Intentar ping con distintos signatures y fallback a consulta ligera
-        try:
-            conn.ping(True)
-        except TypeError:
-            try:
-                conn.ping()
-            except Exception:
-                try:
-                    cur = conn.cursor()
-                    cur.execute('SELECT 1')
-                except Exception:
-                    pass
-                finally:
-                    try:
-                                                cur.close()
-                    except Exception:
-                        pass
-        except Exception:
-            try:
-                cur = conn.cursor()
-                cur.execute('SELECT 1')
-            except Exception:
-                pass
-            finally:
-                try:
-                    cur.close()
-                except Exception:
-                    pass
-    except Exception:
-        # No bloquear la petición si el ping falla
-        pass
-
-
-@app.teardown_appcontext
-def close_db(exception=None):
-    """Cerrar la conexión al terminar el contexto de la app para liberar recursos."""
-    try:
-        conn = mysql.connection
-        conn.close()
-    except Exception:
-        pass
-
 # ------------------- USUARIOS -------------------
 @app.route('/crearusuario', methods=['POST'])
 def crearusuario():
@@ -183,49 +136,54 @@ def crearusuario():
 
 @app.route('/accesologin', methods=['GET', 'POST'])
 def accesologin():
-    if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
-        email = request.form['email']
-        password = request.form['password']
+    try:
+        if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
+            email = request.form['email']
+            password = request.form['password']
 
-        cursor = mysql.connection.cursor()
-        try:
-            cursor.execute("SELECT * FROM usuario WHERE email = %s", (email,))
-            user = cursor.fetchone()
-        finally:
-            cursor.close()
-
-        is_valid = False
-        if user:
+            cursor = mysql.connection.cursor()
             try:
-                is_valid = bcrypt.check_password_hash(user['password'], password)
-            except ValueError:
-                is_valid = False
-            if not is_valid:
-                is_valid = (user['password'] == password)
-
-        if user and is_valid:
-            cur2 = mysql.connection.cursor()
-            try:
-                cur2.execute("UPDATE usuario SET login_count = login_count + 1, last_login = NOW() WHERE id = %s", (user['id'],))
-                mysql.connection.commit()
+                cursor.execute("SELECT * FROM usuario WHERE email = %s", (email,))
+                user = cursor.fetchone()
             finally:
-                cur2.close()
+                cursor.close()
 
-            session['logueado'] = True
-            session['id'] = user['id']
-            session['id_rol'] = user['id_rol']
-            session['nombre'] = user.get('nombre')
+            is_valid = False
+            if user:
+                try:
+                    is_valid = bcrypt.check_password_hash(user['password'], password)
+                except Exception:
+                    # fallback a comparación simple si por alguna razón no es hash (legacy)
+                    is_valid = (user.get('password') == password)
 
-            flash('Sesión iniciada correctamente.', 'success')  # mismo mensaje que al cerrar sesión
+            if user and is_valid:
+                cur2 = mysql.connection.cursor()
+                try:
+                    cur2.execute("UPDATE usuario SET login_count = login_count + 1, last_login = NOW() WHERE id = %s", (user['id'],))
+                    mysql.connection.commit()
+                finally:
+                    cur2.close()
 
-            if user['id_rol'] == 1:
-                return redirect(url_for('admin'))
-            elif user['id_rol'] == 2:
-                return redirect(url_for('usuario'))
-        else:
-            flash('Correo o contraseña incorrectos', 'danger')
-            return redirect(url_for('login'))
-    return render_template('login.html')
+                session['logueado'] = True
+                session['id'] = user['id']
+                session['id_rol'] = user['id_rol']
+                session['nombre'] = user.get('nombre')
+
+                flash('Sesión iniciada correctamente.', 'success')
+
+                if user['id_rol'] == 1:
+                    return redirect(url_for('admin'))
+                elif user['id_rol'] == 2:
+                    return redirect(url_for('usuario'))
+            else:
+                flash('Correo o contraseña incorrectos', 'danger')
+                return redirect(url_for('login'))
+        return render_template('login.html')
+    except Exception as e:
+        # registra la traza completa en el logger y muestra mensaje genérico al usuario
+        app.logger.exception("Error en accesologin")
+        flash('Se produjo un error interno. Revisa los logs del servidor.', 'danger')
+        return redirect(url_for('login'))
 
 
 # ------------------- ADMIN -------------------
