@@ -205,7 +205,7 @@ def accesologin():
             session['id_rol'] = user['id_rol']
             session['nombre'] = user.get('nombre')
 
-            flash('Sesión iniciada correctamente.', 'success')  # mismo mensaje que al cerrar sesión
+            flash('Sesión iniciada correctamente.', 'success')
 
             if user['id_rol'] == 1:
                 return redirect(url_for('admin'))
