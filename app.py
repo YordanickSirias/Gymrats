@@ -102,6 +102,7 @@ def dashboard():
                            usuarios_count=usuarios_count,
                            productos_count=productos_count)
 
+
 # ------------------- USUARIOS -------------------
 @app.route('/crearusuario', methods=['POST'])
 def crearusuario():
@@ -135,67 +136,50 @@ def crearusuario():
         cursor.close()
 
 @app.route('/accesologin', methods=['GET', 'POST'])
-
 def accesologin():
-    try:
-        if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
-            email = request.form['email']
-            password = request.form['password']
+    if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
+        email = request.form['email']
+        password = request.form['password']
 
-            app.logger.debug("Intento de login para email=%s", email)
+        cursor = mysql.connection.cursor()
+        try:
+            cursor.execute("SELECT * FROM usuario WHERE email = %s", (email,))
+            user = cursor.fetchone()
+        finally:
+            cursor.close()
 
-            cursor = mysql.connection.cursor()
+        is_valid = False
+        if user:
             try:
-                cursor.execute("SELECT * FROM usuario WHERE email = %s", (email,))
-                user = cursor.fetchone()
+                is_valid = bcrypt.check_password_hash(user['password'], password)
+            except ValueError:
+                is_valid = False
+            if not is_valid:
+                is_valid = (user['password'] == password)
+
+        if user and is_valid:
+            cur2 = mysql.connection.cursor()
+            try:
+                cur2.execute("UPDATE usuario SET login_count = login_count + 1, last_login = NOW() WHERE id = %s", (user['id'],))
+                mysql.connection.commit()
             finally:
-                cursor.close()
+                cur2.close()
 
-            app.logger.debug("Usuario obtenido: %s", {
-                'found': bool(user),
-                'id': user.get('id') if user else None,
-                'email': user.get('email') if user else None,
-                'pwd_present': bool(user and user.get('password')),
-                'pwd_len': len(user.get('password')) if user and user.get('password') else 0,
-                'keys': list(user.keys()) if user else []
-            })
+            session['logueado'] = True
+            session['id'] = user['id']
+            session['id_rol'] = user['id_rol']
+            session['nombre'] = user.get('nombre')
 
-            is_valid = False
-            if user:
-                try:
-                    is_valid = bcrypt.check_password_hash(user['password'], password)
-                except Exception as ex:
-                    app.logger.exception("Error al verificar contraseña con bcrypt")
-                    # fallback: comparación simple (solo para debug, migrar a hashes)
-                    is_valid = (user.get('password') == password)
+            flash('Sesión iniciada correctamente.', 'success')  # mismo mensaje que al cerrar sesión
 
-            if user and is_valid:
-                cur2 = mysql.connection.cursor()
-                try:
-                    cur2.execute("UPDATE usuario SET login_count = login_count + 1, last_login = NOW() WHERE id = %s", (user['id'],))
-                    mysql.connection.commit()
-                finally:
-                    cur2.close()
-
-                session['logueado'] = True
-                session['id'] = user['id']
-                session['id_rol'] = user['id_rol']
-                session['nombre'] = user.get('nombre')
-
-                flash('Sesión iniciada correctamente.', 'success')
-
-                if user['id_rol'] == 1:
-                    return redirect(url_for('admin'))
-                elif user['id_rol'] == 2:
-                    return redirect(url_for('usuario'))
-            else:
-                flash('Correo o contraseña incorrectos', 'danger')
-                return redirect(url_for('login'))
-        return render_template('login.html')
-    except Exception:
-        app.logger.exception("Error en accesologin (capturado)")
-        flash('Se produjo un error interno. Revisa los logs del servidor.', 'danger')
-        return redirect(url_for('login'))
+            if user['id_rol'] == 1:
+                return redirect(url_for('admin'))
+            elif user['id_rol'] == 2:
+                return redirect(url_for('usuario'))
+        else:
+            flash('Correo o contraseña incorrectos', 'danger')
+            return redirect(url_for('login'))
+    return render_template('login.html')
 
 
 # ------------------- ADMIN -------------------
