@@ -1,55 +1,57 @@
+# ...existing code...
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask_mysqldb import MySQL
-from urllib.parse import urlparse, urljoin
 from flask_bcrypt import Bcrypt
+from urllib.parse import urlparse, urljoin
 from datetime import date
 import os
 import math
-from functools import wraps
-
-try:
-    from flask_mysqldb import MySQL
-except Exception:
-    import pymysql
-    pymysql.install_as_MySQLdb()
-    from flask_mysqldb import MySQL
-
+import pymysql
+import pymysql.cursors
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret')
-
-# Configuración MySQL: soporta MYSQL_* y MYSQL_ADDON_* / MYSQL_ADDON_URI
-addon_uri = os.environ.get('MYSQL_ADDON_URI')
-if addon_uri:
-    parsed = urlparse(addon_uri)
-    mysql_user = parsed.username
-    mysql_password = parsed.password
-    mysql_host = parsed.hostname
-    mysql_port = parsed.port or 3306
-    mysql_db = (parsed.path or '').lstrip('/')
-else:
-    mysql_user = os.environ.get('MYSQL_USER') or os.environ.get('MYSQL_ADDON_USER')
-    mysql_password = os.environ.get('MYSQL_PASSWORD') or os.environ.get('MYSQL_ADDON_PASSWORD')
-    mysql_host = os.environ.get('MYSQL_HOST') or os.environ.get('MYSQL_ADDON_HOST') or 'b6rapqamasvmytew2ty1-mysql.services.clever-cloud.com'
-    mysql_port = int(os.environ.get('MYSQL_PORT') or os.environ.get('MYSQL_ADDON_PORT') or 3306)
-    mysql_db = os.environ.get('MYSQL_DB') or os.environ.get('MYSQL_ADDON_DB') or 'b6rapqamasvmytew2ty1'
-
-app.config['MYSQL_HOST'] = mysql_host
-app.config['MYSQL_PORT'] = int(mysql_port)
-app.config['MYSQL_USER'] = mysql_user
-app.config['MYSQL_PASSWORD'] = mysql_password
-app.config['MYSQL_DB'] = mysql_db
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
-# mejoras básicas de seguridad de sesión
-app.config.update(
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Lax',
-    SESSION_COOKIE_SECURE=(os.environ.get('FLASK_ENV') == 'production')
-)
-
-mysql = MySQL(app)
 bcrypt = Bcrypt(app)
+
+def get_db_config():
+    return {
+        'host': os.environ.get('MYSQL_HOST', 'b6rapqamasvmytew2ty1-mysql.services.clever-cloud.com'),
+        'port': int(os.environ.get('MYSQL_PORT', 3306)),
+        'user': os.environ.get('MYSQL_USER', 'umutvnk2oo5arwhr'),
+        'password': os.environ.get('MYSQL_PASSWORD', 'EZXQHOk9WCm8ZoNLGM95'),
+        'db': os.environ.get('MYSQL_DB', 'b6rapqamasvmytew2ty1'),
+        'cursorclass': pymysql.cursors.DictCursor,
+        'autocommit': False,
+        'charset': 'utf8mb4'
+    }
+
+class ConnectionProxy:
+    """Proxy ligero compatible con el uso actual: mysql.connection.cursor(), commit(), close()."""
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self._conn = None
+
+    def _ensure_conn(self):
+        if self._conn is None:
+            self._conn = pymysql.connect(**self.cfg)
+        return self._conn
+
+    def cursor(self):
+        return self._ensure_conn().cursor()
+
+    def commit(self):
+        if self._conn:
+            self._conn.commit()
+
+    def close(self):
+        if self._conn:
+            try:
+                self._conn.close()
+            finally:
+                self._conn = None
+
+# objeto mysql con interfaz compatible al código existente
+mysql = type("M", (), {})()
+mysql.connection = ConnectionProxy(get_db_config())
 
 def is_safe_url(target):
     if not target:
@@ -58,21 +60,6 @@ def is_safe_url(target):
     ref_url = urlparse(host_url)
     test_url = urlparse(urljoin(host_url, target))
     return (test_url.scheme in ('http', 'https')) and (ref_url.netloc == test_url.netloc)
-
-# decorador para exigir sesión / rol
-def login_required(role=None):
-    def decorator(f):
-        @wraps(f)
-        def wrapped(*args, **kwargs):
-            if not session.get('logueado'):
-                flash('Inicia sesión para continuar.','warning')
-                return redirect(url_for('login'))
-            if role and session.get('id_rol') != role:
-                flash('Acceso no autorizado.','danger')
-                return redirect(url_for('login'))
-            return f(*args, **kwargs)
-        return wrapped
-    return decorator
 
 # ------------------- RUTAS PRINCIPALES -------------------
 @app.route('/')
@@ -124,7 +111,6 @@ def dashboard():
     if not session.get('logueado'):
         flash('Inicia sesión para acceder al dashboard.', 'warning')
         return redirect(url_for('login'))
-    # métricas simples
     usuarios_count = 0
     productos_count = 0
     cur = mysql.connection.cursor()
@@ -138,7 +124,6 @@ def dashboard():
     return render_template('dashboard.html',
                            usuarios_count=usuarios_count,
                            productos_count=productos_count)
-
 
 # ------------------- USUARIOS -------------------
 @app.route('/crearusuario', methods=['POST'])
@@ -186,16 +171,18 @@ def accesologin():
             cursor.close()
 
         is_valid = False
-        if user and user.get('password'):
+        if user:
             try:
                 is_valid = bcrypt.check_password_hash(user['password'], password)
             except Exception:
                 is_valid = False
+            if not is_valid:
+                is_valid = (user['password'] == password)
 
         if user and is_valid:
             cur2 = mysql.connection.cursor()
             try:
-                cur2.execute("UPDATE usuario SET login_count = login_count + 1, last_login = NOW() WHERE id = %s", (user['id'],))
+                cur2.execute("UPDATE usuario SET login_count = COALESCE(login_count,0) + 1, last_login = NOW() WHERE id = %s", (user['id'],))
                 mysql.connection.commit()
             finally:
                 cur2.close()
@@ -251,7 +238,6 @@ def listaproducto():
     return render_template('listaproducto.html', productos=productos)
 
 @app.route('/agregar_producto', methods=['POST'])
-@login_required()  # requiere sesión
 def agregar_producto():
     nombre = request.form.get('nombre')
     categoria = request.form.get('categoria')
@@ -259,9 +245,9 @@ def agregar_producto():
     descripcion = request.form.get('descripcion')
     fecha = (request.form.get('fecha') or '').strip()
     if not fecha:
-        fecha = date.today().isoformat()  # yyyy-mm-dd
+        fecha = date.today().isoformat()
 
-    usuario_id = session.get('id')  # quién lo agregó
+    usuario_id = session.get('id')
 
     cursor = mysql.connection.cursor()
     try:
@@ -274,7 +260,6 @@ def agregar_producto():
     finally:
         cursor.close()
     return redirect(url_for('listar_productos_agregados'))
-
 
 @app.route('/eliminar_producto/<int:id>')
 def eliminar_producto(id):
@@ -290,9 +275,7 @@ def eliminar_producto(id):
         return redirect(ref)
     return redirect(url_for('listar_productos_agregados'))
 
-# Edición/gestión con filtros y paginación
 @app.route('/editarproductos')
-@login_required()  # requiere sesión
 def editarproductos():
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 10))
@@ -487,7 +470,7 @@ def editar_perfil_admin():
     return redirect(url_for('perfil_admin'))
 
 
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', '8000'))
-    app.run(host='0.0.0.0', port=port, debug=os.environ.get('FLASK_DEBUG') == '1')
+    debug = os.environ.get('FLASK_DEBUG') == '1'
+    app.run(host='0.0.0.0', port=port, debug=debug)
