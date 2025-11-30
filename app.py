@@ -5,6 +5,7 @@ from flask_bcrypt import Bcrypt
 from datetime import date
 import os
 import math
+from functools import wraps
 
 try:
     from flask_mysqldb import MySQL
@@ -17,14 +18,35 @@ except Exception:
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret')
 
-# Configuración MySQL
-app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST', 'b6rapqamasvmytew2ty1-mysql.services.clever-cloud.com')
-app.config['MYSQL_PORT'] = int(os.environ.get('MYSQL_PORT', '3306'))
-app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER', 'umutvnk2oo5arwhr')
-app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD', 'EZXQHOk9WCm8ZoNLGM95')
-app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB', 'b6rapqamasvmytew2ty1')
+# Configuración MySQL: soporta MYSQL_* y MYSQL_ADDON_* / MYSQL_ADDON_URI
+addon_uri = os.environ.get('MYSQL_ADDON_URI')
+if addon_uri:
+    parsed = urlparse(addon_uri)
+    mysql_user = parsed.username
+    mysql_password = parsed.password
+    mysql_host = parsed.hostname
+    mysql_port = parsed.port or 3306
+    mysql_db = (parsed.path or '').lstrip('/')
+else:
+    mysql_user = os.environ.get('MYSQL_USER') or os.environ.get('MYSQL_ADDON_USER')
+    mysql_password = os.environ.get('MYSQL_PASSWORD') or os.environ.get('MYSQL_ADDON_PASSWORD')
+    mysql_host = os.environ.get('MYSQL_HOST') or os.environ.get('MYSQL_ADDON_HOST') or 'b6rapqamasvmytew2ty1-mysql.services.clever-cloud.com'
+    mysql_port = int(os.environ.get('MYSQL_PORT') or os.environ.get('MYSQL_ADDON_PORT') or 3306)
+    mysql_db = os.environ.get('MYSQL_DB') or os.environ.get('MYSQL_ADDON_DB') or 'b6rapqamasvmytew2ty1'
+
+app.config['MYSQL_HOST'] = mysql_host
+app.config['MYSQL_PORT'] = int(mysql_port)
+app.config['MYSQL_USER'] = mysql_user
+app.config['MYSQL_PASSWORD'] = mysql_password
+app.config['MYSQL_DB'] = mysql_db
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
+# mejoras básicas de seguridad de sesión
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    SESSION_COOKIE_SECURE=(os.environ.get('FLASK_ENV') == 'production')
+)
 
 mysql = MySQL(app)
 bcrypt = Bcrypt(app)
@@ -36,6 +58,21 @@ def is_safe_url(target):
     ref_url = urlparse(host_url)
     test_url = urlparse(urljoin(host_url, target))
     return (test_url.scheme in ('http', 'https')) and (ref_url.netloc == test_url.netloc)
+
+# decorador para exigir sesión / rol
+def login_required(role=None):
+    def decorator(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if not session.get('logueado'):
+                flash('Inicia sesión para continuar.','warning')
+                return redirect(url_for('login'))
+            if role and session.get('id_rol') != role:
+                flash('Acceso no autorizado.','danger')
+                return redirect(url_for('login'))
+            return f(*args, **kwargs)
+        return wrapped
+    return decorator
 
 # ------------------- RUTAS PRINCIPALES -------------------
 @app.route('/')
@@ -149,13 +186,11 @@ def accesologin():
             cursor.close()
 
         is_valid = False
-        if user:
+        if user and user.get('password'):
             try:
                 is_valid = bcrypt.check_password_hash(user['password'], password)
-            except ValueError:
+            except Exception:
                 is_valid = False
-            if not is_valid:
-                is_valid = (user['password'] == password)
 
         if user and is_valid:
             cur2 = mysql.connection.cursor()
@@ -216,6 +251,7 @@ def listaproducto():
     return render_template('listaproducto.html', productos=productos)
 
 @app.route('/agregar_producto', methods=['POST'])
+@login_required()  # requiere sesión
 def agregar_producto():
     nombre = request.form.get('nombre')
     categoria = request.form.get('categoria')
@@ -256,6 +292,7 @@ def eliminar_producto(id):
 
 # Edición/gestión con filtros y paginación
 @app.route('/editarproductos')
+@login_required()  # requiere sesión
 def editarproductos():
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 10))
