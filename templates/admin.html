@@ -1,0 +1,124 @@
+{% extends 'baseadmin.html' %}
+{% block title %}Panel de Administración{% endblock %}
+{% block body %}
+
+<style>
+  body{background:linear-gradient(160deg,#0e0e10,#161618 55%,#1c1c1f);}
+  .section-band{
+    background:#1f1f21;border:1px solid #2a2a2a;color:#fff;border-radius:16px;
+    box-shadow:0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  .admin-card{
+    background:#1f1f21;border:1px solid #2a2a2a;color:#e6e6e6;border-radius:18px;
+    overflow:hidden;transition:.3s;height:100%;
+  }
+  .admin-card:hover{transform:translateY(-4px);border-color:#c40000;box-shadow:0 16px 34px -14px rgba(196,0,0,.45);}
+  .admin-card .card-title{color:#ff4d4d;font-weight:600;margin-bottom:.75rem;}
+  .admin-card .thumb{display:block;width:100%;max-width:110px;margin:0 auto;filter:drop-shadow(0 10px 18px rgba(0,0,0,.25));}
+  .btn-primary{
+    background:linear-gradient(90deg,#7a0000,#c40000);border:none;color:#fff;font-weight:600;letter-spacing:.3px;
+    box-shadow:0 6px 16px -8px rgba(110,0,0,.55);
+  }
+  .btn-primary:hover{background:linear-gradient(90deg,#c40000,#ff4d4d);transform:translateY(-2px);}
+</style>
+
+<div class="container mt-4">
+  <div class="section-band text-center p-4 mb-4">
+    <h2 class="m-0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Panel principal de administración">
+      Sistema de Gestión de Productos
+    </h2>
+  </div>
+
+  <div class="row g-4">
+    <!-- Perfil -->
+    <div class="col-12 col-md-6">
+      <div class="card admin-card h-100">
+        <div class="row g-0 h-100">
+          <div class="col-8">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title" data-bs-toggle="tooltip" data-bs-placement="top" title="Gestiona la información de tu cuenta">Perfil del Usuario</h5>
+              <!-- ...existing code... -->
+              <div class="mt-auto">
+                <a href="{{ url_for('perfil_admin') }}" class="btn btn-primary"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Ir a tu perfil">Ver Detalles</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-4 d-flex align-items-center justify-content-center p-2">
+            <img src="{{ url_for('static', filename='user.png') }}" class="thumb" alt="Perfil Usuario"
+                 data-bs-toggle="tooltip" data-bs-placement="left" title="Ver perfil de usuario">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Registrar productos -->
+    <div class="col-12 col-md-6">
+      <div class="card admin-card h-100">
+        <div class="row g-0 h-100">
+          <div class="col-8">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title" data-bs-toggle="tooltip" data-bs-placement="top" title="Agrega nuevos productos al catálogo">Registrar Productos</h5>
+              <!-- ...existing code... -->
+              <div class="mt-auto">
+                <a href="{{ url_for('listar_productos_agregados') }}" class="btn btn-primary"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Ver y registrar productos">Ver Detalles</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-4 d-flex align-items-center justify-content-center p-2">
+            <a href="{{ url_for('listar_productos_agregados') }}" data-bs-toggle="tooltip" data-bs-placement="left" title="Registrar/gestionar productos">
+              <img src="{{ url_for('static', filename='agregarp.png') }}" class="thumb" alt="Agregar Producto">
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visualizar productos -->
+    <div class="col-12 col-md-6">
+      <div class="card admin-card h-100">
+        <div class="row g-0 h-100">
+          <div class="col-8">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title" data-bs-toggle="tooltip" data-bs-placement="top" title="Visualiza el catálogo de productos">Visualizar Productos</h5>
+              <!-- ...existing code... -->
+              <div class="mt-auto">
+                <a href="{{ url_for('listar_productos') }}" class="btn btn-primary"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Ir al listado de productos">Ver Detalles</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-4 d-flex align-items-center justify-content-center p-2">
+            <img src="{{ url_for('static', filename='listarp.png') }}" class="thumb" alt="Listar Producto"
+                 data-bs-toggle="tooltip" data-bs-placement="left" title="Ver productos">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de usuarios -->
+    <div class="col-12 col-md-6">
+      <div class="card admin-card h-100">
+        <div class="row g-0 h-100">
+          <div class="col-8">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title" data-bs-toggle="tooltip" data-bs-placement="top" title="Consulta y administra usuarios">Lista de Usuarios</h5>
+              <div class="mt-auto">
+                <a href="{{ url_for('listausuarios') }}" class="btn btn-primary"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Ir al listado de usuarios">Ver Detalles</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-4 d-flex align-items-center justify-content-center p-2">
+            <a href="{{ url_for('listausuarios') }}" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver usuarios">
+              <img src="{{ url_for('static', filename='userlist.png') }}" class="thumb" alt="Listar Usuarios">
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

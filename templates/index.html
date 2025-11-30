@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block titulo %}Inicio{% endblock titulo %}
+
+{% block body %}
+<style>
+  /* Fondo general del body (solo en esta página) */
+  body{
+    background:linear-gradient(160deg,#0e0e10,#161618 55%,#1c1c1f);
+  }
+  /* Wrapper de la página de inicio */
+  .home-bg{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+    padding-bottom:40px;
+  }
+
+  /* Carousel: mantener estilo pero con mejor lectura en oscuro */
+  #carouselExampleIndicators .carousel-inner{
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  #carouselExampleIndicators .carousel-item img{
+    height:420px;
+    object-fit:cover;
+    filter:brightness(.85) contrast(1.05);
+  }
+  #carouselExampleIndicators .carousel-control-prev-icon,
+  #carouselExampleIndicators .carousel-control-next-icon{
+    filter: invert(1) grayscale(100%);
+  }
+
+  /* Bandas de título/sección existentes (bg-light) adaptadas a oscuro */
+  .home-bg .bg-light{
+    background:#1f1f21 !important;
+    border:1px solid #2a2a2a;
+    color:#fff;
+  }
+  .home-bg .text-dark{ color:#fff !important; }
+
+  /* Tarjetas de texto existentes (border + bg-body) adaptadas a oscuro */
+  .home-bg .bg-body{
+    background:#1f1f21 !important;
+    color:#e6e6e6 !important;
+  }
+  .home-bg .border{ border-color:#2a2a2a !important; }
+  .home-bg .rounded{ border-radius:16px !important; }
+  .home-bg .fw-bold.text-primary{ color:#ff4d4d !important; }
+
+  /* Cards de servicios: mantener estructura y mejorar contraste */
+  .service-card{
+    background:#1f1f21;
+    border:1px solid #2a2a2a;
+    color:#e6e6e6;
+    border-radius:18px;
+    overflow:hidden;
+    transition:.3s;
+  }
+  .service-card:hover{
+    transform:translateY(-4px);
+    border-color:#c40000;
+    box-shadow:0 16px 34px -14px rgba(196,0,0,.45);
+  }
+  .service-card .card-title{ color:#ff4d4d; font-weight:600; }
+  .service-card .card-img-top{
+    width:150px; height:150px;
+    object-fit:contain;
+    margin:16px auto 0;
+    background:radial-gradient(circle,#262628 40%,#1f1f21);
+    border-radius:50%;
+    padding:14px;
+    box-shadow:0 0 0 4px rgba(255,255,255,.05);
+  }
+
+  /* Botón primario existente -> tonalidad roja en esta página */
+  .home-bg .btn-primary{
+    background:linear-gradient(90deg,#7a0000,#c40000);
+    border:none;
+    color:#fff;
+    font-weight:600;
+    letter-spacing:.3px;
+    box-shadow:0 6px 16px -8px rgba(110,0,0,.55);
+  }
+  .home-bg .btn-primary:hover{
+    background:linear-gradient(90deg,#c40000,#ff4d4d);
+    transform:translateY(-2px);
+  }
+
+  @media (max-width:768px){
+    #carouselExampleIndicators .carousel-item img{ height:300px; }
+  }
+</style>
+
+<div class="home-bg">
+  <!-- Carousel -->
+  <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+      <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+      <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
+      <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+    <div class="carousel-inner">
+      <div class="carousel-item active" data-bs-interval="5000">
+        <img src="{{ url_for('static', filename='banner1_fit.png') }}" class="d-block w-100" alt="Banner 1">
+      </div>
+      <div class="carousel-item" data-bs-interval="5000">
+        <img src="{{ url_for('static', filename='banner2_fit.png') }}" class="d-block w-100" alt="Banner 2">
+      </div>
+      <div class="carousel-item" data-bs-interval="5000">
+        <img src="{{ url_for('static', filename='banner3_fit.png') }}" class="d-block w-100" alt="Banner 3">
+      </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Anterior</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Siguiente</span>
+    </button>
+  </div>
+
+  <!-- Información -->
+  <div class="container-fluid p-5 text-center bg-light">
+    <h1 class="text-dark m-0">SOBRE GYMRATS</h1>
+  </div>
+
+  <div class="container-fluid mt-5">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="border shadow p-3 mb-5 bg-body rounded">
+          <p style="text-align: justify;">
+            <span class="fw-bold text-primary">GymRats</span> es una tienda especializada en la venta de
+            productos y suplementos para entrenamiento físico. Ofrecemos proteínas, creatinas, preentrenos,
+            aminoácidos, accesorios y más, todo diseñado para ayudarte a alcanzar tus metas fitness.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="border shadow p-3 mb-5 bg-body rounded">
+          <p style="text-align: justify;">
+            También contamos con ropa deportiva y equipamiento para gimnasio, tanto para principiantes como
+            para atletas experimentados. Nuestro objetivo es brindarte calidad, confianza y asesoría en cada
+            compra.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="border shadow p-3 mb-5 bg-body rounded">
+          <p style="text-align: justify;">
+            En <span class="fw-bold text-primary">GymRats</span> no solo vendemos productos, sino que te
+            ayudamos a mejorar tu rendimiento. Ofrecemos asesoría fitness personalizada, para que logres
+            los mejores resultados en tu entrenamiento y nutrición.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Servicios -->
+  <div class="container-fluid p-2 text-center bg-light">
+    <h1 class="text-dark m-0">SERVICIOS</h1>
+  </div>
+
+  <div class="container-fluid mt-5 pb-5">
+    <div class="row g-4">
+      <!-- Servicio 1 -->
+      <div class="col-sm-4">
+        <div class="card shadow mb-4 h-100 service-card">
+          <img src="{{ url_for('static', filename='suplementos.png') }}" class="card-img-top rounded-circle p-3" alt="Suplementos">
+          <div class="card-body">
+            <h5 class="card-title">Suplementos y Nutrición</h5>
+            <p style="text-align: justify;">
+              Encuentra proteínas, creatinas, aminoácidos y vitaminas de las mejores marcas. Todo lo que
+              necesitas para potenciar tus entrenamientos y mejorar tu rendimiento físico.
+            </p>
+          </div>
+          <div class="text-center mb-3">
+            <button class="btn btn-primary">Ver más...</button>
+          </div>
+        </div>
+      </div>
+      <!-- Servicio 2 -->
+      <div class="col-sm-4">
+        <div class="card shadow mb-4 h-100 service-card">
+          <img src="{{ url_for('static', filename='equipamiento.png') }}" class="card-img-top rounded-circle p-3" alt="Equipamiento">
+          <div class="card-body">
+            <h5 class="card-title">Equipamiento Deportivo</h5>
+            <p style="text-align: justify;">
+              Ofrecemos pesas, bandas, guantes, shakers y más accesorios para entrenamiento en casa o
+              gimnasio. Productos resistentes y cómodos para cada nivel de entrenamiento.
+            </p>
+          </div>
+          <div class="text-center mb-3">
+            <button class="btn btn-primary">Ver más...</button>
+          </div>
+        </div>
+      </div>
+      <!-- Servicio 3 -->
+      <div class="col-sm-4">
+        <div class="card shadow mb-4 h-100 service-card">
+          <img src="{{ url_for('static', filename='asesoria_fit.png') }}" class="card-img-top rounded-circle p-3" alt="Asesoría">
+          <div class="card-body">
+            <h5 class="card-title">Asesoría Fitness</h5>
+            <p style="text-align: justify;">
+              Nuestro equipo ofrece asesoría personalizada en nutrición y entrenamiento. Ideal para quienes
+              desean mejorar su físico o iniciar un estilo de vida más saludable.
+            </p>
+          </div>
+          <div class="text-center mb-3">
+            <button class="btn btn-primary">Ver más...</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+<!-- ...existing code... -->
+{% extends 'base.html' %}
+{% block titulo %}Acerca de GymRats{% endblock titulo %}
+
+{% block body %}
+<style>
+  body{background:linear-gradient(160deg,#0e0e10,#161618 55%,#1c1c1f);}
+  .gym-dark-card{
+    background:#1f1f21;
+    color:#e6e6e6;
+    border:1px solid #2a2a2a;
+    border-radius:20px;
+    box-shadow:0 8px 26px -12px rgba(0,0,0,.7);
+  }
+  .gym-dark-card .list-group-item{
+    background:#232325;
+    color:#d0d0d0;
+    border-color:#2d2d2d;
+  }
+  .gym-dark-card .fw-bold.text-primary,
+  .gym-dark-card .text-primary{color:#ff4d4d !important;}
+  .badge.bg-primary{background:linear-gradient(90deg,#7a0000,#c40000)!important;}
+</style>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card gym-dark-card">
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='logo_gymrats.png') }}" alt="Logo GymRats" width="80" class="mb-3">
+            <h2 class="fw-bold text-primary m-0">¡Bienvenido a GymRats!</h2>
+          </div>
+          <p class="fs-5">
+            En <span class="fw-bold text-primary">GymRats</span> nos apasiona el fitness y la vida saludable.
+            Somos una tienda dedicada a ofrecer suplementos, equipamiento y asesorías para ayudarte a alcanzar
+            tus metas de entrenamiento.
+          </p>
+          <p class="fs-5">
+            Catálogo variado: proteínas, creatinas, ropa y accesorios de entrenamiento.
+          </p>
+          <ul class="list-group list-group-flush mb-4">
+            <li class="list-group-item">Suplementos y nutrición deportiva</li>
+            <li class="list-group-item">Equipamiento y accesorios</li>
+            <li class="list-group-item">Asesorías fitness personalizadas</li>
+            <li class="list-group-item">Atención al cliente especializada</li>
+          </ul>
+          <p class="fs-5">
+            Te acompañamos en cada paso de tu progreso físico con orientación y calidad.
+          </p>
+          <div class="text-center mt-4">
+            <span class="badge bg-primary fs-6">Motivación | Disciplina | Resultados</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+<!-- ...existing code... -->

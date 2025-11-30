@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block titulo %} Registrarse {% endblock titulo %}
+
+{% block body %}
+<style>
+  body{background:linear-gradient(160deg,#0e0e10,#161618 55%,#1c1c1f);}
+  .auth-wrapper{min-height:100vh; display:flex; justify-content:center; align-items:center; padding:24px;}
+  .auth-card{width:100%; max-width:1100px; border-radius:22px; overflow:hidden; background:#111;}
+  .auth-left{
+    background: linear-gradient(185deg, #000000 0%, #c40000 70%);
+    color:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding:48px 28px; text-align:center;
+  }
+  .auth-left img{max-width:45%; height:auto; object-fit:contain; margin-bottom:16px;}
+  .auth-left h2{font-weight:700; letter-spacing:.6px; margin-bottom:8px;}
+  .auth-left p{font-family:'Lucida Console', monospace; opacity:.95; max-width:85%; margin:0 auto 16px;}
+  .auth-right{
+    background:#1f1f21; color:#e6e6e6; padding:40px 28px; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  }
+  .auth-right h2{color:#fff; font-weight:700; margin-bottom:18px;}
+  .btn-google{
+    background:#232325; color:#e6e6e6; border:1px solid #2d2d2d; height:45px;
+  }
+  .btn-google:hover{background:#27272a; color:#fff; border-color:#3a3a3a;}
+  .auth-right .form-control{
+    background:#232325; border:1px solid #2d2d2d; color:#e6e6e6; height:45px;
+  }
+  .auth-right .form-control::placeholder{color:#a9a9ad;}
+  .auth-right .form-control:focus{
+    background:#252527; color:#fff; border-color:#c40000; box-shadow:0 0 0 .15rem rgba(196,0,0,.3);
+  }
+  .btn-red{
+    background:linear-gradient(90deg,#7a0000,#c40000); border:none; color:#fff; height:45px; font-weight:700;
+    box-shadow:0 6px 16px -6px rgba(110,0,0,.55);
+  }
+  .btn-red:hover{background:linear-gradient(90deg,#c40000,#ff4d4d);}
+</style>
+
+<div class="auth-wrapper">
+  <div class="auth-card shadow-lg">
+    <div class="row g-0">
+      <div class="col-md-6 auth-left">
+        <img src="{{ url_for('static', filename='logo_gymrats.png') }}" alt="GymRats">
+        <h2>¡ÚNETE A GYMRATS!</h2>
+        <p>Regístrate y forma parte de nuestra comunidad fitness.</p>
+        <a href="{{ url_for('login') }}" class="btn btn-light text-dark fw-bold">Iniciar Sesión</a>
+      </div>
+      <div class="col-md-6 auth-right">
+        <h2>Crear cuenta</h2>
+        <button type="button" class="btn btn-google w-100 d-flex align-items-center justify-content-center mb-3" style="max-width:400px;">
+          <img src="{{ url_for('static', filename='google_gymrats.png') }}" alt="Google" style="width:20px; margin-right:10px;">
+          Iniciar con Google
+        </button>
+        <p class="text-secondary mb-3" style="color:#b5b5b5!important;">o usa tu correo electrónico</p>
+
+        <form method="post" action="{{ url_for('crearusuario') }}" class="w-100" style="max-width:400px;">
+          <div class="mb-3">
+            <input type="text" class="form-control" name="nombre" placeholder="Nombre completo" required>
+          </div>
+          <div class="mb-3">
+            <input type="email" class="form-control" name="email" placeholder="Correo electrónico" required>
+          </div>
+            <div class="mb-3">
+            <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+          </div>
+          <div class="mb-3">
+            <input type="password" class="form-control" name="confirm_password" placeholder="Confirmar contraseña" required>
+          </div>
+          <button type="submit" class="btn btn-red w-100">Registrarse</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+  {% set icon_map = {
+    'success':'bi-check-circle-fill',
+    'warning':'bi-exclamation-triangle-fill',
+    'danger':'bi-x-circle-fill',
+    'info':'bi-info-circle-fill'
+  } %}
+  {% for category, message in messages %}
+    {% set header_grad = 
+      'linear-gradient(90deg,#047600,#11a800)' if category=='success' else
+      'linear-gradient(90deg,#b36a00,#ffb100)' if category=='warning' else
+      'linear-gradient(90deg,#880000,#c40000)' if category=='danger' else
+      'linear-gradient(90deg,#004c7a,#007bbd)' %}
+    <div class="modal fade" id="flashModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius:22px; overflow:hidden;">
+          <div class="modal-header" style="background:{{ header_grad }};">
+            <h5 class="modal-title text-white m-0 d-flex align-items-center">
+              <i class="bi {{ icon_map.get(category,'bi-info-circle-fill') }} me-2"></i>
+              {% if category=='success' %}Registro exitoso{% elif category=='warning' %}Aviso{% elif category=='danger' %}Error{% else %}Información{% endif %}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body" style="background:#1f1f21; color:#e6e6e6;">
+            <p class="fw-semibold mb-2">{{ message }}</p>
+            {% if category=='success' %}
+              <p class="text-secondary mb-0" style="font-size:.9rem;">Ahora puedes iniciar sesión y continuar.</p>
+            {% elif category=='danger' %}
+              <p class="text-secondary mb-0" style="font-size:.85rem;">Revisa los datos ingresados e inténtalo nuevamente.</p>
+            {% elif category=='warning' %}
+              <p class="text-secondary mb-0" style="font-size:.85rem;">Por favor corrige lo indicado para continuar.</p>
+            {% else %}
+              <p class="text-secondary mb-0" style="font-size:.85rem;">Mensaje informativo del sistema.</p>
+            {% endif %}
+          </div>
+          <div class="modal-footer" style="background:#1f1f21; border-top:1px solid #2a2a2a;">
+            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Aceptar</button>
+            {% if category=='success' %}
+              <a href="{{ url_for('login') }}" class="btn btn-red">Ir a Login</a>
+            {% elif category in ['danger','warning'] %}
+              <a href="{{ url_for('registro') }}" class="btn btn-red">Reintentar</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      {% for category, message in messages %}
+        new bootstrap.Modal('#flashModal{{ loop.index }}').show();
+      {% endfor %}
+    });
+  </script>
+{% endif %}
+{% endwith %}
+{% endblock body %}

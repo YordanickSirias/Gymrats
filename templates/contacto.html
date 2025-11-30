@@ -1,0 +1,87 @@
+<!-- ...existing code... -->
+{% extends 'base.html' %}
+{% block titulo %}Contacto{% endblock titulo %}
+
+{% block body %}
+<style>
+  body{background:linear-gradient(160deg,#0e0e10,#161618 55%,#1c1c1f);}
+  .gym-dark-card{
+    background:#1f1f21;
+    color:#e4e4e4;
+    border:1px solid #2a2a2a;
+    border-radius:20px;
+    box-shadow:0 8px 26px -12px rgba(0,0,0,.7);
+  }
+  .gym-dark-card .text-primary,
+  .gym-dark-card .fw-bold.text-primary{color:#ff4d4d !important;}
+  .gym-dark-card .form-control,
+  .gym-dark-card textarea{
+    background:#232325;
+    border:1px solid #2d2d2d;
+    color:#e6e6e6;
+  }
+  .gym-dark-card .form-control:focus{
+    background:#252527;
+    color:#fff;
+    border-color:#c40000;
+    box-shadow:0 0 0 .15rem rgba(196,0,0,.35);
+  }
+  .btn-primary{
+    background:linear-gradient(90deg,#7a0000,#c40000);
+    border:none;
+    font-weight:600;
+  }
+  .btn-primary:hover{
+    background:linear-gradient(90deg,#c40000,#ff4d4d);
+  }
+  .alert-success{
+    background:#213321;
+    border-color:#2e482e;
+    color:#cfe9cf;
+  }
+</style>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7">
+      <div class="card gym-dark-card">
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='logo_gymrats.png') }}" alt="Logo GymRats" width="60" class="mb-2">
+            <h2 class="fw-bold text-primary m-0">Contáctanos</h2>
+            <p class="text-muted" style="color:#b5b5b5!important;">¿Dudas sobre productos o asesorías? Escríbenos.</p>
+          </div>
+          {% if user %}
+          <div class="alert alert-success">
+            <h5 class="mb-2">¡Gracias por contactarnos!</h5>
+            <ul class="list-unstyled mb-0">
+              <li><b>Nombre:</b> {{ user.nombre }}</li>
+              <li><b>Email:</b> {{ user.email }}</li>
+              <li><b>Mensaje:</b> {{ user.mensaje }}</li>
+            </ul>
+          </div>
+          {% endif %}
+          <form action="" method="get">
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input type="text" id="nombre" name="nombre" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="mensaje" class="form-label">Mensaje</label>
+              <textarea id="mensaje" name="mensaje" rows="4" class="form-control" required></textarea>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">Enviar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+<!-- ...existing code... -->

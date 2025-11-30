@@ -1,0 +1,106 @@
+{% extends 'baseadmin.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block body %}
+<style>
+  body{background:linear-gradient(160deg,#0e0e10,#161618 55%,#1c1c1f);}
+  .section-band{
+    background:#1f1f21;border:1px solid #2a2a2a;color:#fff;border-radius:18px;
+    box-shadow:0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  .stat-grid{display:grid;gap:1.2rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+  .stat-card{
+    background:#1f1f21;border:1px solid #2a2a2a;border-radius:18px;padding:18px;color:#e6e6e6;
+    transition:.3s; position:relative; overflow:hidden;
+  }
+  .stat-card:before{
+    content:''; position:absolute; inset:auto -20% -20% auto; width:140px; height:140px;
+    background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%); filter:blur(6px);
+  }
+  .stat-card:hover{border-color:#c40000;transform:translateY(-4px);box-shadow:0 14px 30px -10px rgba(196,0,0,.45);}
+  .stat-label{font-weight:600; color:#ff4d4d; letter-spacing:.3px; margin-bottom:.35rem;}
+  .metric{font-size:2.1rem; font-weight:800; letter-spacing:.5px;}
+  .subtext{font-size:.9rem; opacity:.8;}
+  .panel{
+    background:#1f1f21;border:1px solid #2a2a2a;border-radius:18px;color:#e6e6e6; padding:18px;
+  }
+  .btn-red{
+    background:linear-gradient(90deg,#7a0000,#c40000); border:none; color:#fff; font-weight:700;
+    box-shadow:0 6px 16px -8px rgba(110,0,0,.55);
+  }
+  .btn-red:hover{background:linear-gradient(90deg,#c40000,#ff4d4d); transform:translateY(-2px);}
+</style>
+
+<div class="container mt-4">
+  <div class="section-band p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap">
+      <h2 class="m-0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Resumen general y accesos directos">Dashboard</h2>
+      <div class="subtext" data-bs-toggle="tooltip" data-bs-placement="left" title="Usuario autenticado">
+        Bienvenido, {{ session.get('nombre','-') }}
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-grid mb-4">
+    <div class="stat-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Cantidad total de usuarios registrados">
+      <div class="stat-label">Usuarios</div>
+      <div class="metric">{{ usuarios_count or 0 }}</div>
+      <div class="subtext">Total registrados</div>
+    </div>
+    <div class="stat-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Cantidad total de productos en catálogo">
+      <div class="stat-label">Productos</div>
+      <div class="metric">{{ productos_count or 0 }}</div>
+      <div class="subtext">En catálogo</div>
+    </div>
+    <div class="stat-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Nombre del usuario actualmente conectado">
+      <div class="stat-label">Último acceso</div>
+      <div class="metric" style="font-size:1.4rem;">{{ session.get('nombre','-') }}</div>
+      <div class="subtext">Usuario actual</div>
+    </div>
+    <div class="stat-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Rol asignado a tu cuenta">
+      <div class="stat-label">Rol</div>
+      <div class="metric" style="font-size:1.4rem;">
+        {% if session.get('id_rol')==1 %}Administrador{% else %}Usuario{% endif %}
+      </div>
+      <div class="subtext">Permisos activos</div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-lg-6">
+      <div class="panel h-100">
+        <h5 class="mb-3" style="color:#ff4d4d;" data-bs-toggle="tooltip" data-bs-placement="top" title="Enlaces frecuentes">Accesos rápidos</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{{ url_for('listausuarios') }}" class="btn btn-red" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver y administrar usuarios">Usuarios</a>
+          <a href="{{ url_for('listar_productos_agregados') }}" class="btn btn-red" data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar o actualizar productos">Registrar producto</a>
+          <a href="{{ url_for('listar_productos') }}" class="btn btn-red" data-bs-toggle="tooltip" data-bs-placement="top" title="Listado de productos">Productos</a>
+          <a href="{{ url_for('perfil_admin') }}" class="btn btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver tu perfil">Mi perfil</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="panel h-100">
+        <h5 class="mb-3" style="color:#ff4d4d;" data-bs-toggle="tooltip" data-bs-placement="top" title="Información de tu sesión">Sesión</h5>
+        <div class="row g-2">
+          <div class="col-6" data-bs-toggle="tooltip" data-bs-placement="top" title="Nombre del usuario logueado">
+            <div class="subtext">Usuario</div><div class="fw-bold">{{ session.get('nombre','-') }}</div>
+          </div>
+          <div class="col-6" data-bs-toggle="tooltip" data-bs-placement="top" title="Tipo de cuenta activa">
+            <div class="subtext">Rol</div><div class="fw-bold">{% if session.get('id_rol')==1 %}Administrador{% else %}Usuario{% endif %}</div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <a href="{{ url_for('logout') }}" class="btn btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" title="Cerrar tu sesión actual">Cerrar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Inicializar tooltips en esta vista
+document.addEventListener('DOMContentLoaded', function () {
+  if (!window.bootstrap) return;
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+});
+</script>
+{% endblock %}

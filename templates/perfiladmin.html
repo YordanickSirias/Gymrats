@@ -1,0 +1,274 @@
+{% extends "baseadmin.html" %}
+{% block title %}Perfil Admin{% endblock title %}
+
+{% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class=flashes>
+  {% for category, message in messages %}
+  <script>
+    (function(){
+      if (!window.Swal) return;
+      const Toast = Swal.mixin({ toast:true, position:"top-end", showConfirmButton:false, timer:2200, timerProgressBar:true });
+      Toast.fire({ icon: "{{ 'success' if category=='success' else ('warning' if category=='warning' else 'info') }}", title: "{{ message }}" });
+    })();
+  </script>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+{% set rol_legible = 'Administrador' if admin and admin.id_rol==1 else ('Usuario' if admin and admin.id_rol==2 else '—') %}
+
+<style>
+  body{ background:linear-gradient(180deg,#fff5f5 0%, #fff 60%, #fff 100%) !important; }
+
+  .header-perfil{
+    background:linear-gradient(92deg,#b30000,#e21313); color:#fff; border-radius:16px;
+    padding:1.2rem 1.6rem; box-shadow:0 12px 28px rgba(179,0,0,.18);
+  }
+  .header-perfil h2{ margin:0; letter-spacing:.4px; }
+  .header-perfil p{ margin:0; opacity:.92; }
+
+  .card-perfil{
+    background:#fff; border:0; border-radius:16px; border-top:4px solid #d90429;
+    box-shadow:0 12px 26px rgba(0,0,0,.08); transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .card-perfil:hover{ transform:translateY(-3px); box-shadow:0 18px 34px rgba(0,0,0,.10); }
+
+  .avatar-wrap{ display:flex; flex-direction:column; align-items:center; }
+  .card-perfil img{
+    width:140px; height:140px; object-fit:cover; border-radius:50%;
+    border:4px solid rgba(217,4,41,.25); box-shadow:0 8px 22px rgba(217,4,41,.18); background:#fff;
+  }
+  .card-perfil h5{ color:#b30000; font-weight:700; margin-top:.85rem; }
+
+  .meta-chips{ display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center; margin-top:.25rem; }
+  .chip{
+    background:#fff5f6; color:#b30000; border:1px solid rgba(217,4,41,.22);
+    border-radius:999px; padding:.28rem .6rem; font-weight:600; font-size:.82rem;
+  }
+
+  .info-item{
+    display:flex; align-items:center; gap:.6rem; background:#fff;
+    border:1px solid #f1d2d6; border-radius:10px; padding:.65rem .75rem;
+    box-shadow:0 4px 12px rgba(217,4,41,.06);
+  }
+  .info-item i{ color:#d90429; }
+  .info-label{ color:#6b6b6f; margin:0; font-size:.9rem; }
+  .info-value{ margin:0; font-weight:600; color:#2a2a2e; }
+
+  .soft-divider{ height:1px; background:linear-gradient(90deg,transparent,#f0c9cf,transparent); margin:1.2rem 0; }
+
+  .quote{
+    color:#6b6b6f; font-style:italic; background:#fff7f8;
+    border:1px dashed #f0c9cf; border-radius:10px; padding:.75rem 1rem;
+  }
+
+  .stats{
+    display:flex; gap:.8rem; flex-wrap:wrap; justify-content:center; margin: .6rem 0 0;
+  }
+  .stat{
+    background:#fff; border:1px solid #f1d2d6; border-radius:10px; padding:.6rem .9rem;
+    box-shadow:0 4px 12px rgba(217,4,41,.06);
+  }
+  .stat .k{ display:block; font-weight:700; color:#b30000; line-height:1; }
+  .stat .v{ display:block; color:#2a2a2e; font-weight:600; }
+
+  .btn-logout{
+    background:linear-gradient(90deg,#b30000,#e21313); border:none; color:#fff; font-weight:700;
+    border-radius:12px; padding:.7rem 1.3rem; box-shadow:0 12px 26px rgba(179,0,0,.18); transition:.2s ease;
+  }
+  .btn-logout:hover{ filter:saturate(1.05) brightness(1.02); transform:translateY(-2px); }
+
+  .btn-primary{
+    background:linear-gradient(90deg,#7a0000,#c40000); border:none; color:#fff; font-weight:600;
+    box-shadow:0 6px 16px -8px rgba(110,0,0,.55);
+  }
+  .btn-primary:hover{ background:linear-gradient(90deg,#c40000,#ff4d4d); }
+  .btn-outline-light{ border-color:#ff4d4d; color:#ff4d4d; }
+  .btn-outline-light:hover{ background:#ff4d4d; color:#111; border-color:#ff4d4d; }
+  .secure-text{ -webkit-text-security: disc; text-security:disc; }
+
+  .modal-content{ background:#1f1f21; color:#e6e6e6; border:1px solid #2a2a2a; }
+  .modal-header{ background:linear-gradient(90deg,#7a0000,#c40000); color:#fff; border-bottom:none; }
+  .modal-footer{ border-top:1px solid #2a2a2a; }
+  .modal .form-control{ background:#232325; border:1px solid #2d2d2d; color:#e6e6e6; }
+  .modal .form-control:focus{
+    background:#252527; color:#fff; border-color:#c40000; box-shadow:0 0 0 .15rem rgba(196,0,0,.3);
+  }
+
+  @media (max-width:576px){ .header-perfil{ padding:1rem 1rem; } .info-item{ padding:.6rem .65rem; } }
+</style>
+
+<div class="header-perfil mb-4">
+  <h2 class="mb-1 text-center"
+      data-bs-toggle="tooltip" data-bs-placement="bottom" title="Vista del perfil del administrador">
+    Perfil del Administrador
+  </h2>
+  <p class="mb-0 text-center"
+     data-bs-toggle="tooltip" data-bs-placement="top" title="Panel de Control - GymRats">
+    Panel de Control - GymRats
+  </p>
+</div>
+  
+<div class="card card-perfil p-4">
+  <div class="avatar-wrap text-center">
+    <img id="avatarActual" alt="Perfil" class="shadow-sm"
+         src="{% if admin and admin.avatar_url %}{{ admin.avatar_url }}{% else %}{{ url_for('static', filename='user.png') }}{% endif %}"
+         data-bs-toggle="tooltip" data-bs-placement="top" title="Foto de perfil">
+    <h5 data-bs-toggle="tooltip" data-bs-placement="top" title="Nombre del administrador">
+      {{ admin.nombre if admin and admin.nombre else 'Administrador Principal' }}
+    </h5>
+    <div class="meta-chips">
+      <span class="chip" data-bs-toggle="tooltip" data-bs-placement="top" title="Rol actual: {{ rol_legible }}">
+        <i class="bi bi-shield-lock-fill me-1"></i>{{ rol_legible }}
+      </span>
+      <span class="chip" data-bs-toggle="tooltip" data-bs-placement="top" title="Estado de la cuenta">
+        <i class="bi bi-activity me-1"></i>{{ 'Activo' }}
+      </span>
+    </div>
+  </div>
+
+  <div class="card-body pt-4">
+    <div class="row g-3 justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="info-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Correo de contacto del administrador">
+              <i class="bi bi-envelope fs-5"></i>
+              <div>
+                <p class="info-label mb-1">Email</p>
+                <p class="info-value">{{ admin.email if admin and admin.email else 'admin@gymrats.com' }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="info-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Rol asignado en el sistema">
+              <i class="bi bi-person-badge fs-5"></i>
+              <div>
+                <p class="info-label mb-1">Rol</p>
+                <p class="info-value">{{ rol_legible }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="info-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Fecha y hora del último inicio de sesión">
+              <i class="bi bi-clock-history fs-5"></i>
+              <div>
+                <p class="info-label mb-1">Último acceso</p>
+                <p class="info-value">
+                  {% if admin and admin.last_login %}
+                    {{ admin.last_login.strftime('%d/%m/%Y %H:%M') if admin.last_login.strftime is defined else admin.last_login }}
+                  {% else %}—{% endif %}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="info-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Cantidad total de inicios de sesión">
+              <i class="bi bi-hash fs-5"></i>
+              <div>
+                <p class="info-label mb-1">Inicios de sesión</p>
+                <p class="info-value">{{ admin.login_count if admin and admin.login_count is not none else 0 }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="soft-divider"></div>
+
+        <p class="quote text-center mb-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Frase motivacional">
+          “La excelencia no se logra entrenando una vez, sino liderando todos los días.”
+        </p>
+
+        <!-- Estadísticas clave -->
+        <div class="stats">
+          <div class="stat text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Fecha de creación de la cuenta">
+            <span class="k">Registrado</span>
+            <span class="v">
+              {% if admin and admin.created_at %}
+                {{ admin.created_at.strftime('%d/%m/%Y %H:%M') if admin.created_at.strftime is defined else admin.created_at }}
+              {% else %}—{% endif %}
+            </span>
+          </div>
+          <div class="stat text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Última vez que accediste">
+            <span class="k">Último acceso</span>
+            <span class="v">
+              {% if admin and admin.last_login %}
+                {{ admin.last_login.strftime('%d/%m/%Y %H:%M') if admin.last_login.strftime is defined else admin.last_login }}
+              {% else %}—{% endif %}
+            </span>
+          </div>
+          <div class="stat text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Número total de veces que ingresaste al sistema">
+            <span class="k">Inicios</span>
+            <span class="v">{{ admin.login_count if admin and admin.login_count is not none else 0 }}</span>
+          </div>
+        </div>
+
+        <!-- Botones debajo de todo (debajo de la cita y stats) -->
+        <div class="text-center mt-3">
+          <div class="d-inline-flex gap-3 flex-wrap">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEditarPerfil"
+                    title="Editar los datos del perfil">
+              Editar perfil
+            </button>
+            <a href="{{ url_for('logout') }}" class="btn btn-logout"
+               data-bs-toggle="tooltip" data-bs-placement="top" title="Cerrar tu sesión actual">
+              <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal edición de perfil -->
+<div class="modal fade" id="modalEditarPerfil" tabindex="-1" aria-labelledby="modalEditarPerfilLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="{{ url_for('editar_perfil_admin') }}">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEditarPerfilLabel" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Actualizar información del perfil">
+            Editar Perfil
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"
+                  data-bs-toggle="tooltip" data-bs-placement="left" title="Cerrar ventana"></button>
+        </div>
+        <div class="modal-body">
+          {% if admin and admin.id %}
+          <input type="hidden" name="id" value="{{ admin.id }}">
+          {% endif %}
+          <div class="mb-3">
+            <label class="form-label" data-bs-toggle="tooltip" data-bs-placement="top" title="Tu nombre visible">Nombre</label>
+            <input type="text" name="nombre" class="form-control" value="{{ admin.nombre if admin and admin.nombre else '' }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" data-bs-toggle="tooltip" data-bs-placement="top" title="Correo de acceso">Correo</label>
+            <input type="email" name="email" class="form-control" value="{{ admin.email if admin and admin.email else '' }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" data-bs-toggle="tooltip" data-bs-placement="top" title="Déjalo vacío para mantener la actual">Contraseña</label>
+            <input type="text" name="password" class="form-control secure-text" placeholder="Deja vacío para no cambiar">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Guardar los cambios realizados">Guardar Cambios</button>
+          <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal" data-bs-toggle="tooltip" data-bs-placement="top" title="Cancelar y cerrar">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.all.min.js"></script>
+<script>
+// Inicializar tooltips en esta vista
+document.addEventListener('DOMContentLoaded', function () {
+  if (!window.bootstrap) return;
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+});
+</script>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends "baseadmin.html" %}
+{% block title %}Editar Productos{% endblock title %}
+{% block body %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+{% for category, message in messages %}
+<script type="text/javascript">
+const Toast = Swal && Swal.mixin ? Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 2000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+}) : null;
+Toast && Toast.fire({ icon: "success", title: "{{message}}" });
+</script>
+{% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+<style>
+  body{ background:linear-gradient(160deg,#0e0e10,#161618 55%,#1c1c1f); }
+  .section-band{ background:#1f1f21; border:1px solid #2a2a2a; color:#fff; border-radius:16px; box-shadow:0 10px 30px -12px rgba(0,0,0,.6); }
+  .dark-card{ background:#1f1f21; border:1px solid #2a2a2a; border-radius:18px; color:#e6e6e6; box-shadow:0 16px 34px -14px rgba(0,0,0,.45); }
+  .admin-table{ background:#1f1f21; border:1px solid #2a2a2a; border-radius:18px; overflow:hidden; box-shadow:0 16px 34px -14px rgba(0,0,0,.45); }
+  .form-control, .form-select{ background:#232325; border:1px solid #2d2d2d; color:#e6e6e6; height:44px; }
+  .form-control::placeholder{ color:#a9a9ad; }
+  .form-control:focus, .form-select:focus{ background:#252527; color:#fff; border-color:#c40000; box-shadow:0 0 0 .15rem rgba(196,0,0,.3); }
+  .admin-table thead th{ background:linear-gradient(90deg,#7a0000,#c40000); color:#fff; border:none; }
+  .admin-table tbody tr{ background:#1f1f21; color:#e6e6e6; }
+  .admin-table tbody tr:hover{ background:#262628; }
+  .admin-table td, .admin-table th{ border-color:#2a2a2a !important; }
+  .btn-primary{ background:linear-gradient(90deg,#7a0000,#c40000); border:none; color:#fff; font-weight:600; box-shadow:0 6px 16px -8px rgba(110,0,0,.55); }
+  .btn-primary:hover{ background:linear-gradient(90deg,#c40000,#ff4d4d); transform:translateY(-1px); }
+  .btn-outline-light{ border-color:#ff4d4d; color:#ff4d4d; }
+  .btn-outline-light:hover{ background:#ff4d4d; color:#111; border-color:#ff4d4d; }
+  .btn-danger{ background:#8b0000; border-color:#8b0000; }
+  .btn-danger:hover{ background:#a00000; border-color:#a00000; }
+  .modal-content{ background:#1f1f21; color:#e6e6e6; border:1px solid #2a2a2a; }
+  .modal-header{ background:linear-gradient(90deg,#7a0000,#c40000); color:#fff; border-bottom:none; }
+  .modal-footer{ border-top:1px solid #2a2a2a; }
+  .pagination .page-link{ background:#232325; color:#e6e6e6; border:1px solid #2d2d2d; }
+  .pagination .page-item.active .page-link,
+  .pagination .page-link:hover{ background:linear-gradient(90deg,#7a0000,#c40000); color:#fff; border-color:#7a0000; }
+  .dt-buttons{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .dt-buttons .dt-button{ background:#ffffff !important; color:#111 !important; border:1px solid #ffffff !important; font-weight:600; border-radius:12px !important; padding:6px 14px !important; line-height:1; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px -8px rgba(255,255,255,.35); transition:.25s; }
+  .dt-buttons .dt-button:hover{ background:linear-gradient(90deg,#c40000,#ff4d4d) !important; color:#fff !important; border-color:#ff4d4d !important; box-shadow:0 8px 20px -10px rgba(196,0,0,.6); }
+</style>
+
+<div class="container mt-4">
+  <div class="section-band p-4 mb-3">
+    <h2 class="m-0 text-center">Lista de Productos</h2>
+  </div>
+
+  <div class="dark-card p-3 mb-3">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-sm-3 col-md-2">
+        <label class="form-label mb-1">Mostrar</label>
+        <select name="per_page" class="form-select" onchange="this.form.submit()">
+          {% for opt in per_page_options %}
+          <option value="{{ opt }}" {% if per_page==opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label mb-1">Ordenar</label>
+        <select name="sort" class="form-select" onchange="this.form.submit()">
+          <option value="id_asc" {% if sort=='id_asc' %}selected{% endif %}>ID (asc)</option>
+          <option value="precio_desc" {% if sort=='precio_desc' %}selected{% endif %}>Precio (mayor → menor)</option>
+          <option value="precio_asc" {% if sort=='precio_asc' %}selected{% endif %}>Precio (menor → mayor)</option>
+          <option value="nombre_asc" {% if sort=='nombre_asc' %}selected{% endif %}>Nombre A → Z</option>
+          <option value="nombre_desc" {% if sort=='nombre_desc' %}selected{% endif %}>Nombre Z → A</option>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label mb-1">Buscar</label>
+        <div class="input-group">
+          <input type="text" name="search" class="form-control" placeholder="Ingrese nombre de producto" value="{{ search }}">
+          <button class="btn btn-outline-light" type="submit">Buscar</button>
+        </div>
+      </div>
+      <div class="col-md-2 d-grid d-md-block">
+        <a href="{{ url_for('editarproductos') }}" class="btn btn-outline-light">Borrar filtros</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="admin-table p-3">
+    <div class="table-responsive">
+      <table id="tablaProductos" class="table table-hover align-middle mb-0 w-100">
+        <thead>
+          <tr>
+            <th style="width:80px">ID</th>
+            <th>Nombre</th>
+            <th style="width:140px">Precio</th>
+            <th style="width:130px">Fecha</th>
+            <th>Descripción</th>
+            <th style="width:140px">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if productos %}
+          {% for producto in productos %}
+          <tr>
+            <td>{{ loop.index + (page-1)*per_page if page is defined else loop.index }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>${{ '%.2f'|format(producto.precio|float) }}</td>
+            <td>
+              {% if producto.fecha %}
+                {{ producto.fecha.strftime('%d/%m/%Y') if producto.fecha.strftime is defined else producto.fecha }}
+              {% else %}—{% endif %}
+            </td>
+            <td style="max-width:520px">{{ producto.descripcion }}</td>
+            <td>
+              <div class="d-flex gap-2 justify-content-center">
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditar{{ producto.id }}">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <a href="{{ url_for('eliminar_producto', id=producto.id) }}"
+                   class="btn btn-danger btn-sm"
+                   data-confirm="¿Seguro que deseas eliminar este producto?"
+                   data-confirm-ok="Sí, eliminar" data-confirm-cancel="Cancelar">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <div class="modal fade" id="modalEditar{{ producto.id }}" tabindex="-1" aria-labelledby="modalLabel{{ producto.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+              <form method="POST" action="{{ url_for('editar_producto_modal', id=producto.id) }}">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel{{ producto.id }}">Editar Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label">Nombre</label>
+                      <input type="text" name="nombre" class="form-control" value="{{ producto.nombre }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Precio</label>
+                      <input type="number" step="0.01" name="precio" class="form-control" value="{{ producto.precio }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Fecha</label>
+                      <input type="date" name="fecha" class="form-control"
+                             value="{% if producto.fecha %}{{ producto.fecha.strftime('%Y-%m-%d') if producto.fecha.strftime is defined else producto.fecha }}{% endif %}">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Descripción</label>
+                      <textarea name="descripcion" class="form-control" required>{{ producto.descripcion }}</textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <tr><td colspan="6" class="text-center">No hay productos que coincidan.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <div class="text-white-50">Mostrando {{ start_item }} - {{ end_item }} de {{ total_count }} productos</div>
+      <nav aria-label="Paginación">
+        <ul class="pagination mb-0">
+          <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('editarproductos', page=page-1 if page>1 else 1, per_page=per_page, sort=sort, search=search) }}">Anterior</a>
+          </li>
+          {% for p in range(1, total_pages + 1) %}
+          <li class="page-item {% if p == page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('editarproductos', page=p, per_page=per_page, sort=sort, search=search) }}">{{ p }}</a>
+          </li>
+          {% endfor %}
+          <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('editarproductos', page=page+1 if page<total_pages else total_pages, per_page=per_page, sort=sort, search=search) }}">Siguiente</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('click', function(e){
+    const a = e.target.closest('a[data-confirm]');
+    if(!a) return;
+    e.preventDefault();
+    if (!window.Swal){
+      window.location.href = a.href;
+      return;
+    }
+    Swal.fire({
+      title: a.getAttribute('data-confirm') || '¿Desea continuar?',
+      text: a.getAttribute('data-confirm-text') || '',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: a.getAttribute('data-confirm-ok') || 'Sí',
+      cancelButtonText: a.getAttribute('data-confirm-cancel') || 'Cancelar'
+    }).then((r)=>{ if(r.isConfirmed) window.location.href = a.href; });
+  });
+</script>
+{% endblock %}
