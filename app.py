@@ -135,11 +135,14 @@ def crearusuario():
         cursor.close()
 
 @app.route('/accesologin', methods=['GET', 'POST'])
+
 def accesologin():
     try:
         if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
             email = request.form['email']
             password = request.form['password']
+
+            app.logger.debug("Intento de login para email=%s", email)
 
             cursor = mysql.connection.cursor()
             try:
@@ -148,12 +151,22 @@ def accesologin():
             finally:
                 cursor.close()
 
+            app.logger.debug("Usuario obtenido: %s", {
+                'found': bool(user),
+                'id': user.get('id') if user else None,
+                'email': user.get('email') if user else None,
+                'pwd_present': bool(user and user.get('password')),
+                'pwd_len': len(user.get('password')) if user and user.get('password') else 0,
+                'keys': list(user.keys()) if user else []
+            })
+
             is_valid = False
             if user:
                 try:
                     is_valid = bcrypt.check_password_hash(user['password'], password)
-                except Exception:
-                    # fallback a comparación simple si por alguna razón no es hash (legacy)
+                except Exception as ex:
+                    app.logger.exception("Error al verificar contraseña con bcrypt")
+                    # fallback: comparación simple (solo para debug, migrar a hashes)
                     is_valid = (user.get('password') == password)
 
             if user and is_valid:
@@ -179,9 +192,8 @@ def accesologin():
                 flash('Correo o contraseña incorrectos', 'danger')
                 return redirect(url_for('login'))
         return render_template('login.html')
-    except Exception as e:
-        # registra la traza completa en el logger y muestra mensaje genérico al usuario
-        app.logger.exception("Error en accesologin")
+    except Exception:
+        app.logger.exception("Error en accesologin (capturado)")
         flash('Se produjo un error interno. Revisa los logs del servidor.', 'danger')
         return redirect(url_for('login'))
 
